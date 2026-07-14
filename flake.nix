@@ -20,6 +20,7 @@
       system,
     }: {
       default = pkgs.mkShell {
+        inputsFrom = [self.packages.${system}.ezlo];
 
         packages = with pkgs; [
           ruff
@@ -27,5 +28,12 @@
       };
     });
 
+    packages = forAllSystems ({
+      pkgs,
+      system,
+    }: {
+      ezlo = pkgs.callPackage ./. { };
+    });
+  };
 }
 
