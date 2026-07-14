@@ -21,3 +21,6 @@ ezlo = "ezlo.__main__:main"
 
 [tool.setuptools.packages.find]
 include = ["*"]
+
+[tool.ruff]
+line-length = 79
