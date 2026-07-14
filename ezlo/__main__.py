@@ -107,8 +107,8 @@ def run_ezlo(worktree_path: Path, target_attrpath: str) -> None:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("pr", type=int)
     parser.add_argument("nixpkgs_repo", type=Path)
+    parser.add_argument("--pr-number", type=int)
     parser.add_argument("--attr", type=str, default="")
     args = parser.parse_args()
 
@@ -117,21 +117,24 @@ def main():
         logger.error(f"{repo_path} is not a valid git repository.")
         sys.exit(1)
 
-    branch_name = f"ezlo-{args.pr}"
+    if args.pr_number is not None:
+        branch_name = f"ezlo-{args.pr_number}"
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tmp_path = Path(tmpdir)
-        patch_file = tmp_path / f"pr-{args.pr}.patch"
-        worktree_path = tmp_path / "worktree"
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+            patch_file = tmp_path / f"pr-{args.pr_number}.patch"
+            worktree_path = tmp_path / "worktree"
 
-        fetch_pr_patch(args.pr, patch_file)
+            fetch_pr_patch(args.pr_number, patch_file)
 
-        with git_worktree(repo_path, branch_name, worktree_path) as wt:
-            prepare_ezlo(wt, patch_file)
-            res = run_ezlo(wt, args.attr)
+            with git_worktree(repo_path, branch_name, worktree_path) as wt:
+                prepare_ezlo(wt, patch_file)
+                res = run_ezlo(wt, args.attr)
+    else:
+        logger.info("No PR number provided. Evaluating local repository directly...")
+        res = run_ezlo(repo_path, args.attr)
 
     print(res)
-
 
 if __name__ == "__main__":
     main()
